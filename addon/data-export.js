@@ -4,6 +4,7 @@ import {getLinkTarget, nullToEmptyString, isOptionEnabled, PromptTemplate, Const
 /* global initButton */
 import {Enumerable, DescribeInfo, initScrollTable, s} from "./data-load.js";
 import {PageHeader} from "./components/PageHeader.js";
+import {QueryHistoryTypeahead} from "./components/QueryHistoryTypeahead.js";
 
 function createQueryHistory(storageKey, max) {
   const isSaved = storageKey === "insextSavedQueryHistory";
@@ -1422,9 +1423,9 @@ class App extends React.Component {
     model.updatedExportedData();
     model.didUpdate();
   }
-  onSelectHistoryEntry(e) {
+  onSelectHistoryEntry(entry) {
     let {model} = this.props;
-    model.selectedHistoryEntry = JSON.parse(e.target.value);
+    model.selectedHistoryEntry = entry;
     model.selectHistoryEntry();
     model.didUpdate();
   }
@@ -1854,10 +1855,7 @@ class App extends React.Component {
                   model.queryTemplates.map(q => h("option", {key: q, value: q}, q))
                 ),
                 h("div", {className: "slds-button-group"},
-                  h("select", {value: JSON.stringify(model.selectedHistoryEntry), onChange: this.onSelectHistoryEntry, className: "query-history"},
-                    h("option", {value: JSON.stringify(null), disabled: true}, "Query History"),
-                    model.queryHistory.list.map(q => h("option", {key: JSON.stringify(q), value: JSON.stringify(q)}, q.query.substring(0, 300)))
-                  ),
+                  h(QueryHistoryTypeahead, {list: model.queryHistory.list, onSelect: this.onSelectHistoryEntry}),
                   h("button", {className: "slds-button slds-button_neutral", onClick: this.onClearHistory, title: "Clear Query History"}, "Clear")
                 ),
                 h("div", {className: "slds-button-group slds-m-left_small"},
