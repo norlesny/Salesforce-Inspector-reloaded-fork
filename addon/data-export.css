@@ -773,13 +773,13 @@ svg.icon:hover {
   background: #f3f2f2;
 }
 
-/* ── Query History Typeahead ─────────────────────────────────── */
-.query-history-typeahead-wrapper {
+/* ── Typeahead Dropdown ──────────────────────────────────────── */
+.typeahead-dropdown-wrapper {
   position: relative;
   display: inline-block;
 }
 
-.query-history-typeahead {
+.typeahead-dropdown {
   width: 8.5rem;
   height: 32px;
   padding: 5px 13px;
@@ -796,13 +796,13 @@ svg.icon:hover {
   box-sizing: border-box;
 }
 
-.query-history-typeahead::after {
+.typeahead-dropdown::after {
   content: "▾";
   margin-left: 4px;
   flex-shrink: 0;
 }
 
-.query-history-typeahead-wrapper input[type="text"] {
+.typeahead-dropdown-wrapper input[type="text"] {
   width: 8.5rem;
   height: 32px;
   padding: 5px 13px;
@@ -813,7 +813,7 @@ svg.icon:hover {
   box-sizing: border-box;
 }
 
-.query-history-dropdown {
+.typeahead-dropdown-list {
   position: absolute;
   top: 100%;
   left: 0;
@@ -832,7 +832,7 @@ svg.icon:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.query-history-dropdown li {
+.typeahead-dropdown-list li {
   padding: 5px 13px;
   cursor: pointer;
   white-space: nowrap;
@@ -840,25 +840,25 @@ svg.icon:hover {
   text-overflow: ellipsis;
 }
 
-.query-history-option--highlighted {
+.typeahead-option--highlighted {
   background: #e8f4fd;
   color: #080707;
 }
 
-.query-history-option--empty {
+.typeahead-option--empty {
   color: #706e6b;
   font-style: italic;
   cursor: default;
 }
 
 /* Wrapper: mirror margin-right collapse that .button-group applies to select */
-.button-group .query-history-typeahead-wrapper {
+.button-group .typeahead-dropdown-wrapper {
   border-left-width: 0;
   margin-right: 0;
 }
 
 /* Closed-state div: mirror what .button-group select gets */
-.button-group .query-history-typeahead {
+.button-group .typeahead-dropdown {
   border-left-width: 0;
   border-radius: 0;
   margin-right: 0;
@@ -866,7 +866,7 @@ svg.icon:hover {
 
 /* Restore left border/radius on inner closed-state div when wrapper is first child.
    The generic :first-child rule repairs only the wrapper (direct child), not this div. */
-.button-group .query-history-typeahead-wrapper:first-child .query-history-typeahead {
+.button-group .typeahead-dropdown-wrapper:first-child .typeahead-dropdown {
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
   border-left-width: 1px;
@@ -875,7 +875,7 @@ svg.icon:hover {
 /* Restore left border/radius on open-state input when wrapper is first child.
    The .button-group input descendant rule strips it; :first-child only repairs
    the wrapper (direct child), not the input (grandchild). */
-.button-group .query-history-typeahead-wrapper:first-child input {
+.button-group .typeahead-dropdown-wrapper:first-child input {
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
   border-left-width: 1px;

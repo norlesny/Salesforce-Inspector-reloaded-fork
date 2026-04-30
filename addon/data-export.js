@@ -4,7 +4,7 @@ import {getLinkTarget, nullToEmptyString, isOptionEnabled, PromptTemplate, Const
 /* global initButton */
 import {Enumerable, DescribeInfo, initScrollTable, s} from "./data-load.js";
 import {PageHeader} from "./components/PageHeader.js";
-import {QueryHistoryTypeahead} from "./components/QueryHistoryTypeahead.js";
+import {TypeaheadDropdown} from "./components/TypeaheadDropdown.js";
 
 function createQueryHistory(storageKey, max) {
   const isSaved = storageKey === "insextSavedQueryHistory";
@@ -1431,7 +1431,7 @@ class App extends React.Component {
   }
   onSelectQueryTemplate(e) {
     let {model} = this.props;
-    model.selectedQueryTemplate = e.target.value;
+    model.selectedQueryTemplate = e;
     model.selectQueryTemplate();
     model.didUpdate();
   }
@@ -1446,7 +1446,7 @@ class App extends React.Component {
   }
   onSelectSavedEntry(e) {
     let {model} = this.props;
-    model.selectedSavedEntry = JSON.parse(e.target.value);
+    model.selectedSavedEntry = e;
     model.selectSavedEntry();
     model.didUpdate();
   }
@@ -1850,19 +1850,13 @@ class App extends React.Component {
             h("div", {className: "query-controls"},
               h("h3", {className: "slds-text-heading_small slds-m-bottom_xx-small slds-m-left_xxx-small"}, "Export Query"),
               h("div", {className: "query-history-controls"},
-                h("select", {value: "", onChange: this.onSelectQueryTemplate, className: "query-history", title: "Check documentation to customize templates"},
-                  h("option", {value: null, disabled: true, defaultValue: true, hidden: true}, "Templates"),
-                  model.queryTemplates.map(q => h("option", {key: q, value: q}, q))
-                ),
+                h(TypeaheadDropdown, {list: model.queryTemplates, label: "Templates", getItemText: q => q, onSelect: this.onSelectQueryTemplate, title: "Check documentation to customize templates"}),
                 h("div", {className: "slds-button-group"},
-                  h(QueryHistoryTypeahead, {list: model.queryHistory.list, onSelect: this.onSelectHistoryEntry}),
+                  h(TypeaheadDropdown, {list: model.queryHistory.list, label: "Query History", getItemText: q => q.query, onSelect: this.onSelectHistoryEntry}),
                   h("button", {className: "slds-button slds-button_neutral", onClick: this.onClearHistory, title: "Clear Query History"}, "Clear")
                 ),
                 h("div", {className: "slds-button-group slds-m-left_small"},
-                  h("select", {value: JSON.stringify(model.selectedSavedEntry), onChange: this.onSelectSavedEntry, className: "query-history"},
-                    h("option", {value: JSON.stringify(null), disabled: true}, "Saved Queries"),
-                    model.savedHistory.list.map(q => h("option", {key: JSON.stringify(q), value: JSON.stringify(q)}, q.query.substring(0, 300)))
-                  ),
+                  h(TypeaheadDropdown, {list: model.savedHistory.list, label: "Saved Queries", getItemText: q => q.query, onSelect: this.onSelectSavedEntry}),
                   h("input", {placeholder: "Query Label", type: "save", value: model.queryName, onInput: this.onSetQueryName}),
                   h("button", {className: "slds-button slds-button_neutral", onClick: this.onAddToHistory, title: "Add query to saved history"}, "Save Query"),
                   h("button", {className: model.expandSavedOptions ? "slds-button slds-button_neutral toggle contract" : "slds-button slds-button_neutral toggle expand", title: "Show More Options", onClick: this.onToggleSavedOptions}, h("div", {className: "button-toggle-icon"}))

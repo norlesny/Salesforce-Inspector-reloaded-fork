@@ -1,44 +1,41 @@
 /* global React */
 const h = React.createElement;
 
-function matchesFilter(query, filterText) {
+function matchesFilter(text, filterText) {
   const words = filterText.toLowerCase().split(/\s+/).filter(Boolean);
   if (words.length === 0) return true;
-  const q = query.toLowerCase();
+  const t = text.toLowerCase();
   let pos = 0;
   for (const word of words) {
-    const idx = q.indexOf(word, pos);
+    const idx = t.indexOf(word, pos);
     if (idx === -1) return false;
     pos = idx + word.length;
   }
   return true;
 }
 
-function highlightMatches(query, filterText) {
+function highlightMatches(text, filterText) {
   const words = filterText.toLowerCase().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return query;
-  const q = query.toLowerCase();
+  if (words.length === 0) return text;
+  const t = text.toLowerCase();
   const segments = [];
   let pos = 0;
   for (const word of words) {
-    const idx = q.indexOf(word, pos);
+    const idx = t.indexOf(word, pos);
     if (idx === -1) break;
-    if (idx > pos) segments.push(query.slice(pos, idx));
-    segments.push(h("strong", {key: idx}, query.slice(idx, idx + word.length)));
+    if (idx > pos) segments.push(text.slice(pos, idx));
+    segments.push(h("strong", {key: idx}, text.slice(idx, idx + word.length)));
     pos = idx + word.length;
   }
-  if (pos < query.length) segments.push(query.slice(pos));
+  if (pos < text.length) segments.push(text.slice(pos));
   return segments;
 }
 
-export class QueryHistoryTypeahead extends React.Component {
+// Props: list, label, getItemText(item)->string, onSelect(item), title (optional)
+export class TypeaheadDropdown extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      isOpen: false,
-      filterText: "",
-      highlightedIndex: -1,
-    };
+    this.state = {isOpen: false, filterText: "", highlightedIndex: -1};
     this.inputRef = null;
     this.listRef = null;
     this.onOpen = this.onOpen.bind(this);
@@ -60,9 +57,9 @@ export class QueryHistoryTypeahead extends React.Component {
   }
 
   onKeyDown(e) {
-    const {list} = this.props;
+    const {list, getItemText} = this.props;
     const {filterText, highlightedIndex} = this.state;
-    const filteredList = list.filter(q => matchesFilter(q.query, filterText));
+    const filteredList = list.filter(item => matchesFilter(getItemText(item), filterText));
 
     if (e.key === "Escape") {
       e.preventDefault();
@@ -78,30 +75,24 @@ export class QueryHistoryTypeahead extends React.Component {
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       this.setState({
-        highlightedIndex: highlightedIndex <= 0
-          ? filteredList.length - 1
-          : highlightedIndex - 1,
+        highlightedIndex: highlightedIndex <= 0 ? filteredList.length - 1 : highlightedIndex - 1,
       });
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const entry = highlightedIndex === -1 ? filteredList[0] : filteredList[highlightedIndex];
-      this.select(entry);
+      const item = highlightedIndex === -1 ? filteredList[0] : filteredList[highlightedIndex];
+      this.select(item);
     }
   }
 
-  select(entry) {
+  select(item) {
     this.setState({isOpen: false, filterText: "", highlightedIndex: -1});
-    this.props.onSelect(entry);
+    this.props.onSelect(item);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // Auto-focus the input when the dropdown opens.
-    // No null-guard needed: inputRef.current is always present when isOpen is true
-    // because the <input> is only rendered when isOpen === true.
     if (!prevState.isOpen && this.state.isOpen) {
       this.inputRef.focus();
     }
-    // Scroll the highlighted item into view when keyboard navigation changes it.
     if (this.state.isOpen
         && this.state.highlightedIndex !== -1
         && this.state.highlightedIndex !== prevState.highlightedIndex
@@ -112,16 +103,18 @@ export class QueryHistoryTypeahead extends React.Component {
   }
 
   renderClosed() {
+    const {label, title} = this.props;
     return h("div", {
-      className: "query-history-typeahead",
+      className: "typeahead-dropdown",
       onClick: this.onOpen,
-    }, "Query History");
+      ...(title ? {title} : {}),
+    }, label);
   }
 
   renderOpen() {
-    const {list} = this.props;
+    const {list, getItemText} = this.props;
     const {filterText, highlightedIndex} = this.state;
-    const filteredList = list.filter(q => matchesFilter(q.query, filterText));
+    const filteredList = list.filter(item => matchesFilter(getItemText(item), filterText));
 
     return [
       h("input", {
@@ -136,20 +129,20 @@ export class QueryHistoryTypeahead extends React.Component {
       }),
       h("ul", {
         key: "list",
-        className: "query-history-dropdown",
+        className: "typeahead-dropdown-list",
         ref: (el) => { this.listRef = el; },
         onMouseDown: e => e.preventDefault(),
       },
         filteredList.length === 0
-          ? h("li", {className: "query-history-option--empty"}, "No matching results")
-          : filteredList.map((q, i) =>
+          ? h("li", {className: "typeahead-option--empty"}, "No matching results")
+          : filteredList.map((item, i) =>
             h("li", {
               key: String(i),
-              className: i === highlightedIndex ? "query-history-option--highlighted" : "",
+              className: i === highlightedIndex ? "typeahead-option--highlighted" : "",
               onMouseDown: e => e.preventDefault(),
-              onClick: () => this.select(q),
+              onClick: () => this.select(item),
               onMouseEnter: () => this.setState({highlightedIndex: i}),
-            }, highlightMatches(q.query.substring(0, 300), filterText))
+            }, highlightMatches(getItemText(item).substring(0, 300), filterText))
           )
       ),
     ];
@@ -157,7 +150,7 @@ export class QueryHistoryTypeahead extends React.Component {
 
   render() {
     const {isOpen} = this.state;
-    return h("div", {className: "query-history-typeahead-wrapper"},
+    return h("div", {className: "typeahead-dropdown-wrapper"},
       isOpen ? this.renderOpen() : this.renderClosed()
     );
   }
